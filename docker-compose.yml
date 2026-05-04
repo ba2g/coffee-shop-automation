@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: coffee-redis
+
+  order-service:
+    image: node:18-alpine
+    container_name: order-service
+    working_dir: /app
+    volumes:
+      - ./order-service:/app
+    # package.json yoksa otomatik oluştur ve kur
+    command: sh -c "if [ ! -f package.json ]; then npm init -y; fi && npm install ioredis express && node server.js"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - redis
+
+  barista-service:
+    image: node:18-alpine
+    container_name: barista-service
+    working_dir: /app
+    volumes:
+      - ./barista-service:/app
+    # package.json yoksa otomatik oluştur ve kur
+    command: sh -c "if [ ! -f package.json ]; then npm init -y; fi && npm install ioredis && node worker.js"
+    depends_on:
+      - redis
