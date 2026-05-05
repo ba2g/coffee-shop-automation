@@ -4,27 +4,41 @@ services:
   redis:
     image: redis:alpine
     container_name: coffee-redis
+    ports:
+      - "6379:6379"
 
+  # Python Öneri Servisi (FastAPI)
+  recommendation-service:
+    build: ./recommendation-service
+    container_name: recommendation-service
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  # Ana Sipariş Servisi (Node.js)
   order-service:
     image: node:18-alpine
     container_name: order-service
     working_dir: /app
     volumes:
       - ./order-service:/app
-    # package.json yoksa otomatik oluştur ve kur
+    # Node.js 18+ sürümünde fetch gömülüdür, ek paket kurmaya gerek yok
     command: sh -c "if [ ! -f package.json ]; then npm init -y; fi && npm install ioredis express && node server.js"
     ports:
       - "3000:3000"
     depends_on:
       - redis
+      - recommendation-service
 
+  # Barista İşleyici (Node.js)
   barista-service:
     image: node:18-alpine
     container_name: barista-service
+    restart: always  # Redis gelene kadar hata alsa bile pes etme, tekrar dene
     working_dir: /app
     volumes:
       - ./barista-service:/app
-    # package.json yoksa otomatik oluştur ve kur
     command: sh -c "if [ ! -f package.json ]; then npm init -y; fi && npm install ioredis && node worker.js"
     depends_on:
       - redis

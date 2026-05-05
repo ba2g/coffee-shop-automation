@@ -1,17 +1,22 @@
 const Redis = require('ioredis');
-const redisSub = new Redis({ host: 'redis' });
-const redisPub = new Redis({ host: 'redis' });
 
-redisSub.subscribe('coffee-orders');
+// Buradaki host: 'redis' ifadesi docker-compose'daki servis adıdır
+const redisSub = new Redis({ host: 'redis', port: 6379 });
+const redisPub = new Redis({ host: 'redis', port: 6379 });
+
+redisSub.subscribe('new-orders', (err) => {
+    if (err) console.error("Kanal abone hatası:", err);
+    else console.log("🚀 Barista yeni siparişleri dinliyor...");
+});
 
 redisSub.on('message', (channel, message) => {
     const order = JSON.parse(message);
-    console.log(`⏳ Hazırlanıyor: ${order.type}`);
+    console.log(`☕ Barista: ${order.id} ID'li ${order.type} hazırlanıyor...`);
 
-    setTimeout(async () => {
-        console.log(`✅ ${order.type} HAZIR!`);
-        
-        // Order-service'e "BİTTİ" mesajı gönder
-        await redisPub.publish('order-status-updates', JSON.stringify({ id: order.id }));
-    }, 5000); // 5 saniye sürsün
+    // Siparişi hazırlama simülasyonu (3 saniye)
+    setTimeout(() => {
+        order.status = "✅ HAZIR / TESLİM EDİLDİ";
+        redisPub.publish('order-status-updates', JSON.stringify(order));
+        console.log(`✅ Barista: ${order.id} hazır ve bildirildi!`);
+    }, 3000);
 });
