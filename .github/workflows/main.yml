@@ -1,0 +1,30 @@
+name: Coffee Shop CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and Run Docker Services
+        run: docker-compose up -d --build
+
+      - name: Wait for services (10s)
+        run: sleep 10
+
+      - name: Check Containers
+        run: docker ps
+
+      - name: Test Order Request
+        run: |
+          curl -X POST http://localhost:3000/order \
+               -H "Content-Type: application/json" \
+               -d '{"type": "Latte"}'
