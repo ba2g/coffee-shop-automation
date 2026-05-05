@@ -14,8 +14,6 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - PYTHONUNBUFFERED=1
-    environment:
       - TZ=Europe/Istanbul
 
   # Ana Sipariş Servisi (Node.js)
