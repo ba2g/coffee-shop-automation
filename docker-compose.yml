@@ -15,6 +15,8 @@ services:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
+    environment:
+      - TZ=Europe/Istanbul
 
   # Ana Sipariş Servisi (Node.js)
   order-service:
@@ -30,6 +32,8 @@ services:
     depends_on:
       - redis
       - recommendation-service
+    environment:
+      - TZ=Europe/Istanbul
 
   # Barista İşleyici (Node.js)
   barista-service:
@@ -42,3 +46,5 @@ services:
     command: sh -c "if [ ! -f package.json ]; then npm init -y; fi && npm install ioredis && node worker.js"
     depends_on:
       - redis
+    environment:
+      - TZ=Europe/Istanbul

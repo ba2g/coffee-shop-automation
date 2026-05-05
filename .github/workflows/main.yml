@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build and Run Docker Services
-        run: docker-compose up -d --build
+        run: docker compose up -d --build
 
       - name: Wait for services (10s)
         run: sleep 10
